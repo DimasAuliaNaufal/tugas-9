@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\history;
-use App\Models\Groups; 
 use App\Models\Friends;
 use Illuminate\Http\Request;
+use App\Models\Groups;
+
 
 class GroupsController extends Controller
 {
@@ -39,17 +39,18 @@ class GroupsController extends Controller
      */
     public function store(Request $request)
     {
+        // Validate the request...
         $request->validate([
             'name' => 'required|unique:groups|max:255',
             'description' => 'required'
         ]);
- 
-        $groups = new groups();
- 
-        $groups->name = $request->name;
-        $groups->description = $request->description;
- 
-        $groups->save();
+
+        $friends = new Groups();
+
+        $friends->name = $request->name;
+        $friends->description = $request->description;
+
+        $friends->save();
 
         return redirect('/groups');
     }
@@ -62,8 +63,8 @@ class GroupsController extends Controller
      */
     public function show($id)
     {
-        $group = Groups::where('id', $id)->first();
-        return view('groups.show', ['group' => $group]);
+        $Groups = Groups::where('id', $id)->first();
+        return view('Groups.show', ['Groups' => $Groups]);
     }
 
     /**
@@ -74,8 +75,8 @@ class GroupsController extends Controller
      */
     public function edit($id)
     {
-        $group = Groups::where('id', $id)->first();
-        return view('groups.edit', ['group' => $group]);
+        $Group = Groups::where('id', $id)->first();
+        return view('Groups.edit', ['group' => $Group]);
     }
 
     /**
@@ -87,10 +88,15 @@ class GroupsController extends Controller
      */
     public function update(Request $request, $id)
     {
+        $request->validate([
+            'name' => 'required|max:255',
+            'description' => 'required'
+        ]);
+
         Groups::find($id)->update([
             'name' => $request->name,
             'description' => $request->description
-            
+
         ]);
 
         return redirect('/groups');
@@ -110,32 +116,30 @@ class GroupsController extends Controller
 
     public function addmember($id)
     {
-        $friend = Friends::where('groups_id', '=', 0)->get();
+        $friends = Friends::where('groups_id', null)->get();
         $group = Groups::where('id', $id)->first();
-        return view('groups.addmember', ['group' => $group, 'friend' => $friend]);
+        return view('Groups.addmember', ['group' => $group, 'friends' => $friends]);
     }
 
-    public function updateaddmember(Request $request, $id)
+    public function updatemember(Request $request, $id)
     {
         $friend = Friends::where('id', $request->friend_id)->first();
-        Friends::where('id', $friend->id)
-        ->update([
-            'groups_id' => $id
+        Friends::find($friend->id)->update(
+            [
+                'groups_id' => $id
+            ]
+        );
 
-            
-        ]);
-
-        return redirect('/groups/addmember/'. $id);
+        return redirect('/groups/addmember/' . $id);
     }
 
     public function deleteaddmember(Request $request, $id)
-    {
-        Friends::find($id)
-        ->update([
-            'groups_id' => 0
-
-            
-        ]);
+    { 
+        Friends::find($id)->update(
+            [
+                'groups_id' => null
+            ]
+        );
 
         return redirect('/groups');
     }
