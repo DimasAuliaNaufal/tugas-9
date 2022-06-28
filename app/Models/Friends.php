@@ -11,7 +11,7 @@ class Friends extends Model
 {
     use HasFactory;
 
-    protected $guarded = ['id'];
+    protected $fillable = ['nama', 'no_tlp', 'alamat'];
 
     public function groups()
     {
